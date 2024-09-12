@@ -40,6 +40,10 @@ Blueapi's REST API is served by the FastAPI library for python: together with th
 
 ### NeXus & Analysis
 
+Existing Diamond data analysis pipelines rely on NeXus SWMR (single write, multiple read) to perform analysis of data as it is written to the NeXus file. To enable continuity at the beamline, and consistency between experiments run with the new stack and the existing stack, the existing NeXus writing code was extracted from GDA and a shim layer added to translate the bluesky event-model data schema<sup>[1]</sup>. This code was embedded in a Spring Boot server, which enabled the service to be easily containerised deployed alongside blueapi without direct reliance on GDA or adding complexity to the GDA code. While this enabled a stepwise migration from the existing infrastructure, it also brought the requirement to continue supporting the existing framework.
+
+<sup>[1]</sup><https://github.com/bluesky/event-model>
+
 ### Deployment & Maintenance
 
 The Athena stack was deployed with Helm on a Kubernetes cluster local to the beamline by utilising a Helm Umbrella chart with components as dependencies: blueapi, the NeXus service and a RabbitMQ instance<sup>[1]</sup>. This enabled us to deploy the stack as a coherent block of functionality.
@@ -145,8 +149,9 @@ Ophyd-async will soon support N-dimensional trajectory scans through use of the 
 
 ### Data API & h5py-based NeXus
 
-Existing Diamond data analysis pipelines rely on NeXus SWMR (single write, multiple read) to perform analysis of data as it is written to the NeXus file. For Diamond-II flagship beamlines coming online in the next few years analysis will instead be either from a data API (likely bluesky/tiled<sup>[1]</sup>) or by consuming the bluesky event-model documents directly. This decouples the NeXus file from needing to be written "live" during the experiment, and provides an opportunity to rethinking priorities of writing the file: if the file is written as a post-processing step, then results of processing can be included to make consuming the data simpler, and archiving the file more efficient.
+For Diamond-II flagship beamlines coming online in the next few years analysis will be decoupled from previous SWMR requirements, with data available from either from a data API (likely bluesky/tiled<sup>[1]</sup>) or by consuming the bluesky event-model documents directly. This decouples the NeXus file from needing to be written "live" during the experiment, and provides an opportunity to rethinking priorities of writing the file: if the file is written as a post-processing step, then results of processing can be included to make consuming the data simpler, and archiving the file more efficient.
 
-It is intended that the legacy NeXus service will be retired after event-model document storage is finalised.
+It is intended that the legacy NeXus service will be retired after event-model document storage is finalised, and a post-processing NeXus writing service with implementation utilising the h5py library will be implemented. A h5py based NeXus service is already in use on MX beamlines at Diamond<sup>[2]</sup>.
 
 <sup>[1]</sup><https://blueskyproject.io/tiled/index.html>
+<sup>[2]</sup><https://github.com/DiamondLightSource/nexgen>
