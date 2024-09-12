@@ -6,7 +6,7 @@
 
 Diamond Light Source has deprecated the GDA (Generic Data Acquisition) platform and is replacing it with Athena, a service-based acquisition platform centred on the bluesky data collection framework from NSLS-II. Historically Diamond has struggled to overcome a mindset that every aspect of the operation of a Synchrotron is equally and inextricably unique. This poster seeks to dispel that myth and describes experiments that have occured and are ongoing which make use of pre-existing free open-source software, with effort spent on altering Diamond requirements or contributing to the existing: rather than "reinventing the wheel".
 
-GDA is a Java monolithic server/client appplication. Visiting users were able to contribute code written in Jython (Python implemented in the Java Virtual Machine) and only as specific alterations to existing experimental proceedures.
+GDA is a Java monolithic server/client appplication. Visiting users were able to contribute code written in Jython (Python implemented in the Java Virtual Machine) but only as specific alterations to existing experimental proceedures.
 
 Athena is a service-based acquisition platform which is aiming to resolve several identified shortcomings of the GDA platform: lack of authentication & remote access; allowing user modification of scan proceedures; Jython being limited to Python 2.7; improving maintainability of a mature and expansive codebase.
 
