@@ -2,7 +2,7 @@
 
 ## Introduction
 
-<img src="./pictures/gda_logo.jpg" alt="The GDA logo: G, D and A in a sans-serif font with a grid of squares viewed from an oblique angle." height=100/><img src="./pictures/athena_logo.png" alt="The Athena platform logo: a 'boggle faced' owl staring into ones soul." height=100/>
+<img src="./pictures/gda_logo.jpg" alt="The GDA logo: G, D and A in a sans-serif font with a grid of squares viewed from an oblique angle." height=100/><img src="./pictures/athena_logo.png" alt="The Athena platform logo: a 'boggle faced' owl staring into one's soul." height=100/>
 
 Diamond Light Source has deprecated the GDA (Generic Data Acquisition) platform and is replacing it with Athena, a service-based acquisition platform centred on the bluesky data collection framework from NSLS-II. Historically Diamond has struggled to overcome a mindset that every aspect of the operation of a Synchrotron is equally and inextricably unique. This poster seeks to dispel that myth and describes experiments that have occurred and are ongoing which make use of pre-existing free open-source software, with effort spent on altering Diamond requirements or contributing to the existing: rather than "reinventing the wheel".
 
@@ -83,6 +83,7 @@ This example gives some easy places to look for efficiency gains: deserializing 
 ### ArgoCD
 
 <img src="./pictures/argo_deployment.png" alt="ArgoCD management console for the p45 beamline at Diamond: the beamline is shown as synced and healthy: the app-of-apps is shown at the left, branching into each of the services deployed for it: 4 IOCs for detectors, motion controllers; the NeXus service, blueapi and a RabbitMQ instance; and common infrastructure for the IOCs."/>
+*ArgoCD management console for the p45 beamline at Diamond*
 
 The Helm umbrella chart makes assumptions about interoperability requirements of the services, and makes atomic changes and maintenance more awkward than intended. Initial moves in the direction of deploying services with ArgoCD are underway, with aims of having beamline state represented by 2 repositories: one containing the list of what services are deployed and enabled<sup>[1]</sup>, and another representing the states of the deployed software<sup>[2]</sup>.
 
