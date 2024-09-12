@@ -4,11 +4,11 @@
 
 <img src="./pictures/gda_logo.jpg" alt="The GDA logo: G, D and A in a sans-serif font with a grid of squares viewed from an oblique angle." height=100/><img src="./pictures/athena_logo.png" alt="The Athena platform logo: a 'boggle faced' owl staring into ones soul." height=100/>
 
-Diamond Light Source has deprecated the GDA (Generic Data Acquisition) platform and is replacing it with Athena, a service-based acquisition platform centred on the bluesky data collection framework from NSLS-II. Historically Diamond has struggled to overcome a mindset that every aspect of the operation of a Synchrotron is equally and inextricably unique. This poster seeks to dispel that myth and describes experiments that have occured and are ongoing which make use of pre-existing free open-source software, with effort spent on altering Diamond requirements or contributing to the existing: rather than "reinventing the wheel".
+Diamond Light Source has deprecated the GDA (Generic Data Acquisition) platform and is replacing it with Athena, a service-based acquisition platform centred on the bluesky data collection framework from NSLS-II. Historically Diamond has struggled to overcome a mindset that every aspect of the operation of a Synchrotron is equally and inextricably unique. This poster seeks to dispel that myth and describes experiments that have occurred and are ongoing which make use of pre-existing free open-source software, with effort spent on altering Diamond requirements or contributing to the existing: rather than "reinventing the wheel".
 
-GDA is a Java monolithic server/client appplication. Visiting users were able to contribute code written in Jython (Python implemented in the Java Virtual Machine) but only as specific alterations to existing experimental proceedures.
+GDA is a Java monolithic server/client application. Visiting users were able to contribute code written in Jython (Python implemented in the Java Virtual Machine) but only as specific alterations to existing experimental procedures.
 
-Athena is a service-based acquisition platform which is aiming to resolve several identified shortcomings of the GDA platform: lack of authentication & remote access; allowing user modification of scan proceedures; Jython being limited to Python 2.7; improving maintainability of a mature and expansive codebase.
+Athena is a service-based acquisition platform which is aiming to resolve several identified shortcomings of the GDA platform: lack of authentication & remote access; allowing user modification of scan procedures; Jython being limited to Python 2.7; improving maintainability of a mature and expansive codebase.
 
 ## Time Series Experiment
 
@@ -16,7 +16,7 @@ In November 2023, an initial experiment was performed with a minimal Athena stac
 
 * GDA's Jython console was used as a client for blueapi, which ran in a beamline-local Kubernetes cluster.
 * A PandA device, Pilatus detector, TetrAMM ammeter, Aravis camera and Linkam temperature controller were created in ophyd-async.
-* A bluesky plan was written for the experimental proceedure which created and write a Sequence Table to the PandA; configured the Linkam to perform a stepped scan down in temperature, then target a high temperature; enabling the PandA to periodically triggered the other devices to collect while the Linkam went to the high temperature.
+* A bluesky plan was written for the experimental procedure which created and write a Sequence Table to the PandA; configured the Linkam to perform a stepped scan down in temperature, then target a high temperature; enabling the PandA to periodically triggered the other devices to collect while the Linkam went to the high temperature.
 * The bluesky RunEngine controlled the experiment and emitted bluesky event-model documents which were consumed by a NeXus service written to convert from the event-model scheme to Diamond's expected NeXus structure.
 
 ### ophyd-async
@@ -33,7 +33,7 @@ Diamond brought expertise in the field of hardware-triggered scanning to the blu
 
 GDA historically operated as a server/client model, with the client running either as a user or a beamline account while the server ran as a privileged user able to write to the shared filesystem. This contrasts with the usual mode at NSLS-II of running bluesky directly from the command line, with data presented by a data API. To allow a continuation of service  blueapi: which combines a bluesky RunEngine; a REST API; and necessary context mapping between them was produced.
 
-Blueapi's REST API is served by the FastAPI library for python: together with the Pydantic data validation library to construct JSON schemas for experimental proceedures, this enables the service to be wholly written in modern Python. Blueapi is currently <3000 non-test lines of code: excluding test code, the Yaml templates for its helm deployment are on near-parity, but provides a crucial connection between the served API and running experimental proceedures.
+Blueapi's REST API is served by the FastAPI library for python: together with the Pydantic data validation library to construct JSON schemas for experimental procedures, this enables the service to be wholly written in modern Python. Blueapi is currently <3000 non-test lines of code: excluding test code, the Yaml templates for its helm deployment are on near-parity, but provides a crucial connection between the served API and running experimental procedures.
 
 <img src="./pictures/blueapi.svg" alt="A stack of boxes, with FastAPI (an open source library) at the top, below which is blueapi (an open source library which has been 'invented here' at Diamond) and below which is the RunEngine from the bluesky open source collaboration. The RunEngine connects to a series of devices: a TetrAMM ammeter which was written specifically for Diamond's needs, but also a PandA device and Pilatus detector, which are generic devices contributed to the ophyd-async collaboration."/>
 *Blueapi is the glue between FastAPI and the RunEngine. Some device classes were written for the experiment, but others were contributed generic devices.*
@@ -60,7 +60,7 @@ A 2nd experiment, initially due to occur June 2024 but delayed due to hardware p
 
 * FastAPI autogenerated API page used as client to run the experiment from a web browser, enabling browser-based OIDC flow.
 * Previous devices updated to ophyd-async 0.5 patterns, devices created for background beamline readings (mirror positions, synchrotron current etc.)
-* A bluesky plan was written for the experimental proceedure:
+* A bluesky plan was written for the experimental procedure:
   * Capturing background devices at start and end of scan
   * Creating and writing a Sequence Table to the PandA to capture N frames, then await a hardware trigger and collect M additional frames
 * A NeXus device metadata service created and utilised by the existing NeXus service to get invariant data about devices involved in the scan (e.g. pixel size of the Pilatus detectors).
@@ -124,7 +124,7 @@ The decision of which architecture will be adopted is a pending question: if mul
 ### Client Generation
 
 We are currently exploring how to offer generated GUIs for plans exposed by blueapi to contribute resources to the bluesky-webclient library<sup>[1]</sup>. The below example extracts the docstring from a python plan<sup>[2]</sup> and provides appropriate fields for the type using JSONForms<sup>[3]</sup> and Pydantic<sup>[4]</sup> data validation.
-While beamlines that operate a standard experimental proceedure may wish to specialise their UI components, blueapi will provide at minimum a viable generic UI and is increasingly aiming to enable rich UI generation<sup>[5][6][7]</sup> by making use of Python annotations and Pydantic Field objects<sup>[8]</sup> which are all optional inclusions.
+While beamlines that operate a standard experimental procedure may wish to specialise their UI components, blueapi will provide at minimum a viable generic UI and is increasingly aiming to enable rich UI generation<sup>[5][6][7]</sup> by making use of Python annotations and Pydantic Field objects<sup>[8]</sup> which are all optional inclusions.
 
 <img src="./pictures/client.jpg" alt="Autogenerated client for a blueapi instance. On the left, a dropdown box presents available plans: scan, set_absolute, set_relative and others. On the right, a header 'Basic linkam_plan plan UI' is above a large docstring explaining the parameters of the plan. Below, a series of form boxes with numbers allow filling the parameters of the plan function."/>
 *Autogenerated UI using JSONForms for the plan run in November 2023*
@@ -140,7 +140,7 @@ While beamlines that operate a standard experimental proceedure may wish to spec
 
 ### Widening Adoption
 
-Ophyd-async will soon support N-dimensional trajectory scans through use of the ScanSpec library<sup>[1]</sup>: once this is in place, it is hoped that many of the experimental proceedures currently in use at Diamond can be replicated. A widening library of ophyd-async device and behaviour support in both the library itself and in dodal<sup>[2]</sup>, the Diamond device library, alongside beamline-specific code<sup>[3]</sup> and technique-specific code<sup>[4]</sup> is expected to be responsible for new projects at Diamond and an increasing proportion of business-as-usual.
+Ophyd-async will soon support N-dimensional trajectory scans through use of the ScanSpec library<sup>[1]</sup>: once this is in place, it is hoped that many of the experimental procedures currently in use at Diamond can be replicated. A widening library of ophyd-async device and behaviour support in both the library itself and in dodal<sup>[2]</sup>, the Diamond device library, alongside beamline-specific code<sup>[3]</sup> and technique-specific code<sup>[4]</sup> is expected to be responsible for new projects at Diamond and an increasing proportion of business-as-usual.
 
 <sup>[1]</sup><https://github.com/bluesky/scanspec>  
 <sup>[2]</sup><https://github.com/DiamondLightSource/dodal>  

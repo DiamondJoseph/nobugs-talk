@@ -1,0 +1,2 @@
+MD013: false # line length > 80
+MD033: false # html enabled (required for image sizing in github)
