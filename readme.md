@@ -16,12 +16,12 @@ In November 2023, an initial experiment was performed with a minimal Athena stac
 
 * GDA's Jython console was used as a client for blueapi, which ran in a beamline-local Kubernetes cluster.
 * A PandA device, Pilatus detector, TetrAMM ammeter, Aravis camera and Linkam temperature controller were created in ophyd-async.
-* A bluesky plan was written for the experimental procedure which created and write a Sequence Table to the PandA; configured the Linkam to perform a stepped scan down in temperature, then target a high temperature; enabling the PandA to periodically triggered the other devices to collect while the Linkam went to the high temperature.
+* A bluesky plan was written for the experimental procedure which created and write a Sequence Table to the PandA; configured the Linkam to perform a stepped scan down in temperature, then target a high temperature; enabling the PandA to periodically trigger the other devices to collect while the Linkam went to the high temperature.
 * The bluesky RunEngine controlled the experiment and emitted bluesky event-model documents which were consumed by a NeXus service written to convert from the event-model scheme to Diamond's expected NeXus structure.
 
 ### ophyd-async
 
-Diamond's I22 beamline previously utilised a Time Frame Generator for time series experiments, however the device was end of life and at risk of failing. GDA had good support for hardware triggered experiments using the PyMalcolm<sup>[1]</sup> middleware layer but did not neatly support variable period scanning.
+Diamond's I22 beamline previously used a Time Frame Generator for time series experiments, however the device was end of life and at risk of failing. GDA had good support for hardware triggered experiments using the PyMalcolm<sup>[1]</sup> middleware layer but did not neatly support variable period scanning.
 Diamond brought expertise in the field of hardware-triggered scanning to the bluesky collaboration in the form of ophyd-async<sup>[2]</sup>, which revisited some assumptions made in the original ophyd library<sup>[3]</sup>, the oldest of the libraries in the organisation. Ophyd amounts to ~22,000 non-test lines of code: ophyd-async currently consists of ~7,000, while meeting most existing use cases, and unlocked the use of the core bluesky library<sup>[4]</sup> (~19,000 LOC).
 
 <sup>[1]</sup><https://github.com/DiamondLightSource/pymalcolm>  
@@ -33,7 +33,7 @@ Diamond brought expertise in the field of hardware-triggered scanning to the blu
 
 GDA historically operated as a server/client model, with the client running either as a user or a beamline account while the server ran as a privileged user able to write to the shared filesystem. This contrasts with the usual mode at NSLS-II of running bluesky directly from the command line, with data presented by a data API. To allow a continuation of service  blueapi: which combines a bluesky RunEngine; a REST API; and necessary context mapping between them was produced.
 
-Blueapi's REST API is served by the FastAPI library for python: together with the Pydantic data validation library to construct JSON schemas for experimental procedures, this enables the service to be wholly written in modern Python. Blueapi is currently <3000 non-test lines of code: excluding test code, the Yaml templates for its helm deployment are on near-parity, but provides a crucial connection between the served API and running experimental procedures.
+Blueapi's REST API is served by the FastAPI library for python: together with the Pydantic data validation library to construct JSON schemas for experimental procedures, this enables the service to be wholly written in modern Python. Blueapi is currently <3000 non-test lines of code (the Yaml templates for its helm deployment are nearly equivalent) but provides a crucial connection between the served API and running experimental procedures.
 
 <img src="./pictures/blueapi.svg" alt="A stack of boxes, with FastAPI (an open source library) at the top, below which is blueapi (an open source library which has been 'invented here' at Diamond) and below which is the RunEngine from the bluesky open source collaboration. The RunEngine connects to a series of devices: a TetrAMM ammeter which was written specifically for Diamond's needs, but also a PandA device and Pilatus detector, which are generic devices contributed to the ophyd-async collaboration."/>
 *Blueapi is the glue between FastAPI and the RunEngine. Some device classes were written for the experiment, but others were contributed generic devices.*
@@ -54,7 +54,7 @@ Moving GDA messaging into Kubernetes was an existing desire to address observed 
 
 <sup>[1]</sup><https://artifacthub.io/packages/helm/bitnami/rabbitmq>
 
-## Stopflow Experiment & towards Athena 1.0
+## Stop-flow Experiment & towards Athena 1.0
 
 A 2nd experiment, initially due to occur June 2024 but delayed due to hardware problems to March 2025 will again make use again of time-based PandA hardware scanning.
 
@@ -63,17 +63,17 @@ A 2nd experiment, initially due to occur June 2024 but delayed due to hardware p
 * A bluesky plan was written for the experimental procedure:
   * Capturing background devices at start and end of scan
   * Creating and writing a Sequence Table to the PandA to capture N frames, then await a hardware trigger and collect M additional frames
-* A NeXus device metadata service created and utilised by the existing NeXus service to get invariant data about devices involved in the scan (e.g. pixel size of the Pilatus detectors).
+* A NeXus device metadata service created and used by the existing NeXus service to get invariant data about devices involved in the scan (e.g. pixel size of the Pilatus detectors).
 
 ### Tracing and Metrics
 
-GDA, as a monolithic application, was simple to track operations and debug locally. Transitioning to a service based architecture loses simplicity of debugging. Tracing calls through the system, in addition to logging within the services, enables introspection of the whole system for debugging and enables collection of metrics. Tracing is being implemented with Open Telemetry<sup>[1]</sup>, Jaeger<sup>[2]</sup> and Prometheus<sup>[3]</sup>
+Because GDA was a monolithic application it was simple to track operations and debug locally. Transitioning to a service based architecture loses simplicity of debugging. Tracing calls through the system, in addition to logging within the services, enables introspection of the whole system for debugging and enables collection of metrics. Tracing is being implemented with Open Telemetry<sup>[1]</sup>, Jaeger<sup>[2]</sup> and Prometheus<sup>[3]</sup>
 
 Below an example experiment is traced through blueapi, RabbitMQ and the legacy NeXus service, plotted with Jaeger: blueapi takes ~1ms to publish new data, and is expected to do so at ~10Hz. In this example, the NeXus service takes just over 100ms to consume per-point data and write it to disk, suggesting that it may eventually become a bottle neck.
 
-This example gives some easy places to look for efficiency gains: deserialising the StartDocument took much longer than similar operations, it may benefit from an additional pass. If in a larger dataset it was a standout, or if the length of the deserialising obviously changed after a new version was released, it may also warrant investigation. Gathering the data allows us to make reasoned decisions.
+This example gives some easy places to look for efficiency gains: deserializing the StartDocument took much longer than similar operations, it may benefit from an additional pass. If in a larger dataset it was a standout, or if the length of the deserializing obviously changed after a new version was released, it may also warrant investigation. Gathering the data allows us to make reasoned decisions.
 
-<img src="./pictures/tracing.jpg" alt="A trace of a simple experiment run with blueapi and consumed by the NeXus service: blueapi emits 4 documents: a Start document with scan metadata; a Descriptor document which describes devices involved in the scan; an Event document with point data from the described devices; a Stop document with metadata about how the scan finished. These occur over ~70microseconds. After about a 100microsecond gap, during which the events are sent to a message bus and consumed, the NeXus service consumes the documents and write them to a NeXus file on disc. Some of the larger spans are commented: deserialising the StartDocument takes ~50microseconds, while creating the NeXus file on disc at the first point takes ~100microseconds."/>
+<img src="./pictures/tracing.jpg" alt="A trace of a simple experiment run with blueapi and consumed by the NeXus service: blueapi emits 4 documents: a Start document with scan metadata; a Descriptor document which describes devices involved in the scan; an Event document with point data from the described devices; a Stop document with metadata about how the scan finished. These occur over ~70microseconds. After about a 100microsecond gap, during which the events are sent to a message bus and consumed, the NeXus service consumes the documents and write them to a NeXus file on disc. Some of the larger spans are commented: deserializing the StartDocument takes ~50microseconds, while creating the NeXus file on disc at the first point takes ~100microseconds."/>
 *An example OTEL trace viewed in Jaeger*
 
 <sup>[1]</sup><https://opentelemetry.io/>  
@@ -82,9 +82,9 @@ This example gives some easy places to look for efficiency gains: deserialising 
 
 ### ArgoCD
 
-<img src="./pictures/argo_deployment.png" alt="ArgoCD management console for the p45 beamline at Diamond: the beamline is shown as synced and healthy: the app-of-apps is shown at the left, branching into each of the services deployed for it: 4 IOCs for detectors, motion controllers; the NeXus service, blueapi and a RabbitMQ instance; and common infrastructure for the IOCS."/>
+<img src="./pictures/argo_deployment.png" alt="ArgoCD management console for the p45 beamline at Diamond: the beamline is shown as synced and healthy: the app-of-apps is shown at the left, branching into each of the services deployed for it: 4 IOCs for detectors, motion controllers; the NeXus service, blueapi and a RabbitMQ instance; and common infrastructure for the IOCs."/>
 
-The Helm umbrella chart makes assumptions about interoperability requirements of the services, and makes atomic changes and maintenance more awkward than intended. Initial moves in the direction of deploying services with ArgoCD are underway, with aims of having beamline state represented by 2 repositories: one containing the state of what is deployed<sup>[1]</sup>, and another representing the state of the deployed software<sup>[2]</sup>.
+The Helm umbrella chart makes assumptions about interoperability requirements of the services, and makes atomic changes and maintenance more awkward than intended. Initial moves in the direction of deploying services with ArgoCD are underway, with aims of having beamline state represented by 2 repositories: one containing the list of what services are deployed and enabled<sup>[1]</sup>, and another representing the states of the deployed software<sup>[2]</sup>.
 
 ArgoCD<sup>[3]</sup> is a Kubernetes operator which operates similarly to Helm but allows for a combination of deploying multiple services (similarly to the prior Helm Umbrella chart) while also rolling updates individually to those services, by deploying as an app-of-apps:<sup>[4]</sup> in the linked examples, p45-deployment<sup>[1]</sup> defines the app while p45-services<sup>[2]</sup> defines the apps.
 
